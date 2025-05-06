@@ -6,12 +6,16 @@ from .serializers import (
     HistoriaClinicaSerializer,
     PacienteConHistoriaSerializer
 )
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
+@method_decorator(csrf_exempt, name='dispatch')
 class HistoriaClinicaViewSet(viewsets.ModelViewSet):
     queryset         = HistoriaClinica.objects.select_related('paciente').all()
     serializer_class = HistoriaClinicaSerializer
     filterset_fields = ['paciente']  # habilita ?paciente=<id> en la URL
 
+@method_decorator(csrf_exempt, name='dispatch')
 class PacienteViewSet(viewsets.ModelViewSet):
     queryset         = Paciente.objects.all()
     serializer_class = PacienteConHistoriaSerializer
