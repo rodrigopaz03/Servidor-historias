@@ -4,16 +4,16 @@ from .models import Paciente, HistoriaClinica
 from .serializers import (
     PacienteSerializer,
     HistoriaClinicaSerializer,
+    PacienteConHistoriaSerializer
 )
-
-class PacienteViewSet(viewsets.ModelViewSet):
-    queryset         = Paciente.objects.all()
-    serializer_class = PacienteSerializer
-
 
 class HistoriaClinicaViewSet(viewsets.ModelViewSet):
     queryset         = HistoriaClinica.objects.select_related('paciente').all()
     serializer_class = HistoriaClinicaSerializer
     filterset_fields = ['paciente']  # habilita ?paciente=<id> en la URL
+
+class PacienteViewSet(viewsets.ModelViewSet):
+    queryset         = Paciente.objects.all()
+    serializer_class = PacienteConHistoriaSerializer
 
 
