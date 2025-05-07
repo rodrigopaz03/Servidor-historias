@@ -38,12 +38,20 @@ class PacienteConHistoriaSerializer(serializers.ModelSerializer):
         return paciente
 
 class PacienteSerializer(serializers.ModelSerializer):
-    """
-    Serializer básico para representar datos de Paciente.
-    """
+    id = serializers.ReadOnlyField()
     class Meta:
         model  = Paciente
-        fields = '__all__'
+        fields = [
+            'id',
+            'identificacion',
+            'nombre',
+            'apellido',
+            'fecha_nacimiento',
+            'sexo',
+            'telefono',
+            'email',
+            # cualquier otro campo que tengas…
+        ]
 
 class HistoriaClinicaSerializer(serializers.ModelSerializer):
     """
@@ -55,7 +63,7 @@ class HistoriaClinicaSerializer(serializers.ModelSerializer):
         source='paciente',
         queryset=Paciente.objects.all()
     )
-
+    
     class Meta:
         model  = HistoriaClinica
         fields = [
