@@ -11,7 +11,16 @@ from django.views.decorators.csrf import csrf_exempt
 
 @method_decorator(csrf_exempt, name='dispatch')
 class HistoriaClinicaViewSet(viewsets.ModelViewSet):
-    queryset         = HistoriaClinica.objects.select_related('paciente').all()
+    
+    def get_queryset(self):
+        qs = HistoriaClinica.objects.select_related('paciente').all()
+        pid = self.request.query_params.get('paciente')
+        if pid:
+            try:
+                qs = qs.filter(paciente_id=int(pid))
+            except (ValueError, TypeError):
+                return qs.none()
+        return qs
     serializer_class = HistoriaClinicaSerializer
     filterset_fields = ['paciente']  # habilita ?paciente=<id> en la URL
 
