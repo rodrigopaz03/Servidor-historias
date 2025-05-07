@@ -12,8 +12,10 @@ from django.views.decorators.csrf import csrf_exempt
 @method_decorator(csrf_exempt, name='dispatch')
 class HistoriaClinicaViewSet(viewsets.ModelViewSet):
     
+    queryset = HistoriaClinica.objects.select_related('paciente').all()
+
     def get_queryset(self):
-        qs = HistoriaClinica.objects.select_related('paciente').all()
+        qs = self.queryset
         pid = self.request.query_params.get('paciente')
         if pid:
             try:
