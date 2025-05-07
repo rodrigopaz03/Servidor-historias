@@ -10,34 +10,30 @@ class HistoriaInicialSerializer(serializers.ModelSerializer):
         fields = ('descripcion', 'medico_responsable')
 
 class PacienteConHistoriaSerializer(serializers.ModelSerializer):
-    """
-    Serializer que permite crear un Paciente y su HistoriaClínica inicial en una sola llamada.
-    """
-    historia_inicial = HistoriaInicialSerializer(write_only=True)
+    # No lo hacemos obligatorio, solo write‑only para quien quiera
+    historia_inicial = serializers.DictField(
+        write_only=True, required=False,
+        help_text="(Opcional) descripcion y medico_responsable"
+    )
 
     class Meta:
         model  = Paciente
         fields = [
-            'id',
-            'identificacion',
-            'nombre',
-            'apellido',
-            'fecha_nacimiento',
-            'sexo',
-            'telefono',
-            'email',
+            'identificacion','nombre','apellido','fecha_nacimiento',
+            'sexo','telefono','email',
             'historia_inicial',
         ]
 
     def create(self, validated_data):
-        # Extraemos los datos de la historia
-        historia_data = validated_data.pop('historia_inicial')
-        # Creamos el paciente
+        # Si viniera algo, lo extraemos; sino, queda {}
+        historia_data = validated_data.pop('historia_inicial', {}) or {}
+        # 1) Creamos el paciente
         paciente = Paciente.objects.create(**validated_data)
-        # Asociamos la historia inicial
+        # 2) Creamos siempre la historia, con valores por defecto si no vienen
         HistoriaClinica.objects.create(
             paciente=paciente,
-            **historia_data
+            descripcion=historia_data.get('descripcion', ''),
+            medico_responsable=historia_data.get('medico_responsable', '')
         )
         return paciente
 
