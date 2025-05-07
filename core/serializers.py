@@ -10,7 +10,7 @@ class HistoriaInicialSerializer(serializers.ModelSerializer):
         fields = ('descripcion', 'medico_responsable')
 
 class PacienteConHistoriaSerializer(serializers.ModelSerializer):
-    # No lo hacemos obligatorio, solo write‑only para quien quiera
+    id = serializers.ReadOnlyField()   # <— lo añades aquí
     historia_inicial = serializers.DictField(
         write_only=True, required=False,
         help_text="(Opcional) descripcion y medico_responsable"
@@ -19,8 +19,14 @@ class PacienteConHistoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model  = Paciente
         fields = [
-            'identificacion','nombre','apellido','fecha_nacimiento',
-            'sexo','telefono','email',
+            'id',                       
+            'identificacion',
+            'nombre',
+            'apellido',
+            'fecha_nacimiento',
+            'sexo',
+            'telefono',
+            'email',
             'historia_inicial',
         ]
 
