@@ -9,6 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+import re
 
 @method_decorator(csrf_exempt, name='dispatch')
 class HistoriaClinicaViewSet(viewsets.ModelViewSet):
@@ -16,16 +17,24 @@ class HistoriaClinicaViewSet(viewsets.ModelViewSet):
     serializer_class = HistoriaClinicaSerializer
     filterset_fields = ['paciente']
 
+    def validate_sql_injection(self, input_value):
+        # Regex para detectar posibles inyecciones SQL
+        sql_injection_patterns = [r'--', r'\'', r'\"', r'OR', r'AND', r'1=1']
+        for pattern in sql_injection_patterns:
+            if re.search(pattern, input_value, re.IGNORECASE):
+                raise ValidationError(f"Entrada maliciosa detectada: {input_value}")
+
     def get_queryset(self):
         qs = self.queryset
         pid = self.request.query_params.get('paciente')
 
         if pid:
+            self.validate_sql_injection(pid) 
             try:
-                pid = int(pid)  # Intentamos convertir a entero
-                if pid <= 0:  # Validamos que el ID sea positivo
+                pid = int(pid) 
+                if pid <= 0:  
                     raise ValidationError("El ID del paciente debe ser un número entero positivo.")
-                qs = qs.filter(paciente_id=pid)  # Usamos el ORM para evitar SQL manual
+                qs = qs.filter(paciente_id=pid)  
             except (ValueError, TypeError):
                 return JsonResponse({"error": "ID de paciente no válido"}, status=400)
 
