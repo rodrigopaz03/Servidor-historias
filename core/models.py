@@ -18,6 +18,8 @@ class Paciente(models.Model):
         validators=[RegexValidator(regex=r'^\d{10}$', message='El número debe tener 10 dígitos.')]
     )
     email = models.EmailField("Correo electrónico", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # auto_now_add set here
+    updated_at = models.DateTimeField(auto_now=True)
 
     def clean(self):
         # Validación adicional para el correo electrónico
