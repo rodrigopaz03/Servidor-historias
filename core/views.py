@@ -18,8 +18,11 @@ class HistoriaClinicaViewSet(viewsets.ModelViewSet):
     filterset_fields = ['paciente']
 
     def validate_sql_injection(self, input_value):
-        # Regex para detectar posibles inyecciones SQL
-        sql_injection_patterns = [r'--', r'\'', r'\"', r'OR', r'AND', r'1=1']
+        """
+        Función que valida la entrada para prevenir inyecciones SQL.
+        """
+        # Regex para detectar patrones de inyección SQL comunes
+        sql_injection_patterns = [r'--', r'\'', r'\"', r'OR', r'AND', r'1=1', r'UNION', r'SELECT', r'INSERT']
         for pattern in sql_injection_patterns:
             if re.search(pattern, input_value, re.IGNORECASE):
                 raise ValidationError(f"Entrada maliciosa detectada: {input_value}")
@@ -29,12 +32,13 @@ class HistoriaClinicaViewSet(viewsets.ModelViewSet):
         pid = self.request.query_params.get('paciente')
 
         if pid:
-            self.validate_sql_injection(pid) 
+            # Validamos la entrada para evitar inyecciones SQL
+            self.validate_sql_injection(pid)
             try:
-                pid = int(pid) 
-                if pid <= 0:  
+                pid = int(pid)  # Asegurarse de que el ID sea un número
+                if pid <= 0:  # El ID debe ser positivo
                     raise ValidationError("El ID del paciente debe ser un número entero positivo.")
-                qs = qs.filter(paciente_id=pid)  
+                qs = qs.filter(paciente_id=pid)  # Filtramos por ID de paciente
             except (ValueError, TypeError):
                 return JsonResponse({"error": "ID de paciente no válido"}, status=400)
 
@@ -53,10 +57,13 @@ class PacienteViewSet(viewsets.ModelViewSet):
         """
         try:
             identificacion = request.data.get('identificacion')
+            
+            # Validación de identificación para asegurarse de que solo contenga números
             if not identificacion.isdigit():
                 raise ValidationError("La identificación solo puede contener números.")
-
+            
+            # Llamamos al método original de creación si la validación es exitosa
             return super().create(request, *args, **kwargs)
-        
+
         except ValidationError as e:
             return JsonResponse({"error": str(e)}, status=400)
